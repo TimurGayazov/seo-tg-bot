@@ -6,10 +6,11 @@ print('The server is running')
 
 
 # keyboards
+flvl_keyboard_names = ["☃ Python", "☠ С++", "☹ Javascript", "❄ Профиль"]
 def first_level_keyboard():
     keyboard = telebot.types.ReplyKeyboardMarkup(True, False)
     # Сюда добавишь оставшиеся кнопки первого уровня
-    keyboard.add("☃ Python", "☠ С++", "☹ Javascript", "❄ Профиль")
+    keyboard.add(flvl_keyboard_names[0], flvl_keyboard_names[1], flvl_keyboard_names[2], flvl_keyboard_names[3])
     return keyboard
 
 
@@ -60,19 +61,19 @@ def start(message):
 
 @bot.message_handler(content_types=['text'])
 def handle_text(message):
-    if message.text == 'Профиль':
+    if message.text == flvl_keyboard_names[3]:
         bot.send_message(message.chat.id, 'Ваша статистика: ')
         data = read_user_info_database(message)
         # check-data-info
         print(data)
         bot.send_message(message.chat.id,
                          f'id: {data[0]}\nusername: {data[1]}\nИмя пользователя: {data[2]}\nФамилия: {data[3]}\n\nПройденные курсы:\nPython 1 lvl: {data[4]}\nPython 2 lvl: {data[5]}\nC++ 1 lvl: {data[6]}\nC++ 2 lvl: {data[7]}')
-    elif message.text == "С++":
-        bot.send_message(message.chat.id, "Вы выбрали С++")
-    elif message.text == "Javascript":
-        bot.send_message(message.chat.id, "Вы выбрали Javascript")
-    elif message.text == "Python":
+    elif message.text == flvl_keyboard_names[0]:
         bot.send_message(message.chat.id, "Вы выбрали Python")
+    elif message.text == flvl_keyboard_names[1]:
+        bot.send_message(message.chat.id, "Вы выбрали C++")
+    elif message.text == flvl_keyboard_names[2]:
+        bot.send_message(message.chat.id, "Вы выбрали Javascript")
     else :
         bot.send_message(message.chat.id, "Не известная команда")
 
