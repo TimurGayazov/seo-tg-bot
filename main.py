@@ -53,6 +53,21 @@ def read_user_info_database(message):
     return row
 
 
+def create_database_test(message):
+    message_list = message.text.split(' ')
+    table_name = message_list[1]
+    connect = sqlite3.connect('users.db')
+    cursor = connect.cursor()
+    cursor.execute(f"""CREATE TABLE IF NOT EXISTS {table_name}(
+                id_question INTEGER,
+                question TEXT,
+                answers TEXT,
+                right_answer TEXT
+            )""")
+    connect.commit()
+
+
+
 # /start
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -68,6 +83,9 @@ def handle_text(message):
         print(data)
         bot.send_message(message.chat.id,
                          f'id: {data[0]}\nusername: {data[1]}\nИмя пользователя: {data[2]}\nФамилия: {data[3]}\n\nПройденные курсы:\nPython 1 lvl: {data[4]}\nPython 2 lvl: {data[5]}\nC++ 1 lvl: {data[6]}\nC++ 2 lvl: {data[7]}')
+    elif '/createtest' in message.text:
+        create_database_test(message)
+        bot.send_message(message.chat.id, "Создание теста")
     elif message.text == flvl_keyboard_names[0]:
         bot.send_message(message.chat.id, "Вы выбрали Python")
     elif message.text == flvl_keyboard_names[1]:
