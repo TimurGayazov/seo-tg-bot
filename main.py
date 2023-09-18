@@ -65,6 +65,17 @@ def create_database_test(message):
                 right_answer TEXT
             )""")
     connect.commit()
+    u_id = [1,'qwerty','qw', 4]
+    cursor.execute(
+        f'INSERT INTO {table_name} (id_question, question, answers, right_answer) VALUES (?, ?, ?, ?);', u_id)
+    connect.commit()
+
+def read_test_info(message):
+    connect = sqlite3.connect('users.db')
+    cursor = connect.cursor()
+    cursor.execute(f'SELECT * FROM python3')
+    rows = cursor.fetchall()
+    return rows
 
 
 
@@ -92,6 +103,9 @@ def handle_text(message):
         bot.send_message(message.chat.id, "Вы выбрали C++")
     elif message.text == flvl_keyboard_names[2]:
         bot.send_message(message.chat.id, "Вы выбрали Javascript")
+    elif message.text == '/test':
+        data = read_test_info(message)
+        print(data)
     else :
         bot.send_message(message.chat.id, "Не известная команда")
 
