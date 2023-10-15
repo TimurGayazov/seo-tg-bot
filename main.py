@@ -120,7 +120,8 @@ def handle_text(message):
     elif '/testcommand' in message.text:
         data = read_test_info(message)
         print(data)
-        bot.send_message(message.chat.id, data)
+        for i in range(0, len(data)):
+            bot.send_message(message.chat.id, f'Вопрос #{data[i][0]}\n\n{data[i][1]}\nВарианты ответов:{data[i][2]}\n\nПравильный ответ: {data[i][3]}')
 
     elif message.text == flvl_keyboard_names[0]:
         bot.send_message(message.chat.id, "Вы выбрали Python")
