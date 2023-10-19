@@ -5,13 +5,23 @@ bot = telebot.TeleBot('6630395700:AAEPNADLVlfc7HvH01pPDWJ81w5vAP4TNQw')
 print('The server is running')
 
 db_name = 'database.db'
-flvl_keyboard_names = ["☃ Python", "☠ С++", "☹ Javascript", "❄ Профиль"]
+flvl_keyboard_names = ["Python 1️⃣", "С++ 1️⃣", "Javascript 1️⃣", "👾 Профиль", "Python 2️⃣", "С++ 2️⃣", "Javascript 2️⃣"]
 
 
 def first_level_keyboard():
     keyboard = telebot.types.ReplyKeyboardMarkup(True, False)
-    keyboard.add(flvl_keyboard_names[0], flvl_keyboard_names[1], flvl_keyboard_names[2], flvl_keyboard_names[3])
+    keyboard.row(flvl_keyboard_names[0], flvl_keyboard_names[1], flvl_keyboard_names[2])
+    keyboard.row(flvl_keyboard_names[4], flvl_keyboard_names[5], flvl_keyboard_names[6])
+    keyboard.add(flvl_keyboard_names[3])
     return keyboard
+
+
+def read_table():
+    connect = sqlite3.connect(db_name)
+    cursor = connect.cursor()
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    rows = cursor.fetchall()
+    return rows
 
 
 def second_level_keyboard():
@@ -41,7 +51,9 @@ def create_database(message):
             python_first_test INTEGER,
             python_second_test INTEGER,
             c_first_test INTEGER,
-            c_second_test INTEGER
+            c_second_test INTEGER,
+            js_first_test INTEGER,
+            js_second_test INTEGER
         )""")
     connect.commit()
 
@@ -49,10 +61,9 @@ def create_database(message):
     cursor.execute(f'SELECT id FROM users WHERE id = {u_chat_id}')
     data = cursor.fetchone()
     if data is None:
-        u_id = [message.chat.id, message.from_user.username, message.from_user.first_name, message.from_user.last_name,
-                0, 0, 0, 0]
+        u_id = [message.chat.id, message.from_user.username, message.from_user.first_name, message.from_user.last_name, 0, 0, 0, 0, 0, 0]
         cursor.execute(
-            'INSERT INTO users (id, username, first_name, last_name, python_first_test, python_second_test, c_first_test, c_second_test) VALUES (?, ?, ?, ?, ?, ?, ?, ?);',
+            'INSERT INTO users (id, username, first_name, last_name, python_first_test, python_second_test, c_first_test, c_second_test, js_first_test, js_second_test) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);',
             u_id)
         connect.commit()
     else:
@@ -111,8 +122,7 @@ def read_test_info(message):
     return rows
 
 
-def read_test_info_se():
-    table_name = 'python'
+def read_test_info_se(table_name):
     connect = sqlite3.connect(db_name)
     cursor = connect.cursor()
     cursor.execute(f'SELECT * FROM {table_name}')
@@ -138,7 +148,7 @@ def handle_text(message):
         # check-data-info
         print(data)
         bot.send_message(message.chat.id,
-                         f'id: {data[0]}\nusername: {data[1]}\nИмя пользователя: {data[2]}\nФамилия: {data[3]}\n\nПройденные курсы:\nPython 1 lvl: {data[4]}\nPython 2 lvl: {data[5]}\nC++ 1 lvl: {data[6]}\nC++ 2 lvl: {data[7]}')
+                         f'id: {data[0]}\nusername: {data[1]}\nИмя: {data[2]}\nФамилия: {data[3]}\n\nРезультаты тестов:\nPython 1 lvl: {data[4]}\nPython 2 lvl: {data[5]}\nC++ 1 lvl: {data[6]}\nC++ 2 lvl: {data[7]}\nJavaScript 1 lvl: {data[8]}\nJavaSrcipt 2 lvl: {data[9]}')
     elif '/createtest' in message.text:
         create_database_test(message)
         bot.send_message(message.chat.id, "Тест успешно создан!")
@@ -146,6 +156,10 @@ def handle_text(message):
     elif '/deletetest' in message.text:
         delete_database_test(message)
         bot.send_message(message.chat.id, "Тест успешно удален!")
+
+    elif '/readtable' in message.text:
+        data = read_table()
+        print(*data[1])
 
     elif '/testcommand' in message.text:
         data = read_test_info(message)
@@ -158,10 +172,19 @@ def handle_text(message):
         bot.register_next_step_handler(message, test_func)
 
     elif message.text == flvl_keyboard_names[0]:
-        bot.send_message(message.chat.id, "Вы выбрали Python")
+        table_name = 'python1'
+        bot.send_message(message.chat.id, "Для того чтобы начать тест 'Python 1 lvl' нажмите 'Начать' ", reply_markup=second_level_keyboard())
+        bot.register_next_step_handler(message, test_func)
     elif message.text == flvl_keyboard_names[1]:
         bot.send_message(message.chat.id, "Вы выбрали C++")
     elif message.text == flvl_keyboard_names[2]:
+        bot.send_message(message.chat.id, "Вы выбрали Javascript")
+
+    elif message.text == flvl_keyboard_names[4]:
+        bot.send_message(message.chat.id, "Вы выбрали Python")
+    elif message.text == flvl_keyboard_names[5]:
+        bot.send_message(message.chat.id, "Вы выбрали C++")
+    elif message.text == flvl_keyboard_names[6]:
         bot.send_message(message.chat.id, "Вы выбрали Javascript")
     else:
         bot.send_message(message.chat.id, "Не известная команда")
