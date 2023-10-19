@@ -25,6 +25,7 @@ def third_level_keyboard():
     keyboard = telebot.types.ReplyKeyboardMarkup(True, False)
     keyboard.row('1', '2')
     keyboard.row('3', '4')
+    keyboard.add('Начать заново')
     return keyboard
 
 
@@ -79,7 +80,8 @@ def create_database_test(message):
                 right_answer TEXT
             )""")
     connect.commit()
-    for i in range(0, 2):
+    count_question = int(input('Введите количесвто вопросов: '))
+    for i in range(0, count_question):
         id_question = i+1
         question_name = input(f'Введите вопрос номер {id_question}: ')
         answer_options = input(f'Введите варианты ответов через ,: ')
@@ -116,6 +118,10 @@ def read_test_info_se():
     cursor.execute(f'SELECT * FROM {table_name}')
     rows = cursor.fetchall()
     return rows
+
+
+def write_test_score_user_database():
+    pass
 
 
 @bot.message_handler(commands=['start'])
@@ -161,24 +167,25 @@ def handle_text(message):
         bot.send_message(message.chat.id, "Не известная команда")
 
 
-def test_func(message, current_question=0):
+def test_func(message, current_question=0, score=0):
     data = read_test_info_se()
     if current_question < len(data):
         bot.send_message(message.chat.id, "Выберите правильный ответ: ", reply_markup=third_level_keyboard())
         bot.send_message(message.chat.id, f'Вопрос #{data[current_question][0]}\n\n{data[current_question][1]}\nВарианты ответов:{data[current_question][2]}\n\nПравильный ответ: {data[current_question][3]}')
-        bot.register_next_step_handler(message, check_answer, current_question, data)
+        bot.register_next_step_handler(message, check_answer, current_question, data, score)
     else:
-        bot.send_message(message.chat.id, "Тестирование окончено!", reply_markup=first_level_keyboard())
+        bot.send_message(message.chat.id, f'Тестирование окончено!\nВаш результат: {score}', reply_markup=first_level_keyboard())
 
 
-def check_answer(message, current_question, data):
+def check_answer(message, current_question, data, score):
     if message.text == data[current_question][3]:
         bot.send_message(message.chat.id, "Ответ принят.")
+        score += 1
     else:
         bot.send_message(message.chat.id, "Ответ не принят.")
 
     current_question += 1
-    test_func(message, current_question)
+    test_func(message, current_question, score)
 
 
 bot.polling(none_stop=True)
