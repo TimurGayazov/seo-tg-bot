@@ -1,12 +1,12 @@
 import telebot
 import sqlite3
+from PIL import Image, ImageDraw, ImageFont
 from telebot import types
 bot = telebot.TeleBot('6630395700:AAEPNADLVlfc7HvH01pPDWJ81w5vAP4TNQw')
 print('The server is running')
 
 db_name = 'database.db'
 flvl_keyboard_names = ["Python 1️⃣", "С++ 1️⃣", "Javascript 1️⃣", "👾 Профиль", "Python 2️⃣", "С++ 2️⃣", "Javascript 2️⃣"]
-
 
 def first_level_keyboard():
     keyboard = telebot.types.ReplyKeyboardMarkup(True, False)
@@ -122,7 +122,8 @@ def read_test_info(message):
     return rows
 
 
-def read_test_info_se(table_name):
+def read_test_info_se():
+    table_name = "python1"
     connect = sqlite3.connect(db_name)
     cursor = connect.cursor()
     cursor.execute(f'SELECT * FROM {table_name}')
@@ -133,6 +134,25 @@ def read_test_info_se(table_name):
 def write_test_score_user_database():
     pass
 
+def create_sert(message):
+
+    table_name = "users"
+    connect = sqlite3.connect(db_name)
+    cursor = connect.cursor()
+    cursor.execute(f'SELECT * FROM {table_name}')
+    rows = cursor.fetchall()
+    full_name = ""
+    full_name = str(message.from_user.last_name) + " " + str(message.from_user.first_name)
+    image = Image.open("sert.jpg")
+
+    draw = ImageDraw.Draw(image)
+
+    font = ImageFont.truetype("arial.ttf", 20)
+
+    draw.text((150, 360), full_name, font=font, fill="black")
+    draw.text((920, 440), "5", font=font, fill="black")
+
+    image.save(f"users_serts/{message.chat.id}.jpg")
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -161,11 +181,16 @@ def handle_text(message):
         data = read_table()
         print(*data[1])
 
+    elif '/image' in message.text:
+        with open('sert.jpg', 'rb') as photo:
+            bot.send_photo(message.chat.id, photo)
+        create_sert(message)
+
     elif '/testcommand' in message.text:
         data = read_test_info(message)
         print(data)
         for i in range(0, len(data)):
-            bot.send_message(message.chat.id, f'Вопрос #{data[i][0]}\n\n{data[i][1]}\nВарианты ответов:{data[i][2]}\n\nПравильный ответ: {data[i][3]}')
+            bot.send_message(message.chat.id, f'Вопрос #{data[i][0]}\n\n{data[i][1]}\nВарианты ответов: {data[i][2]}\n\nПравильный ответ: {data[i][3]}')
 
     elif '/testfunc' in message.text:
         bot.send_message(message.chat.id, "Для того чтобы начать тестирование нажмите 'Начать' ", reply_markup=second_level_keyboard())
@@ -192,12 +217,18 @@ def handle_text(message):
 
 def test_func(message, current_question=0, score=0):
     data = read_test_info_se()
+    arr = data[current_question][2].split(",")
+    string = ""
+    for i in range (0, len(arr)):
+        string += str(i + 1) + ") " + arr[i] + "\n"
     if current_question < len(data):
         bot.send_message(message.chat.id, "Выберите правильный ответ: ", reply_markup=third_level_keyboard())
-        bot.send_message(message.chat.id, f'Вопрос #{data[current_question][0]}\n\n{data[current_question][1]}\nВарианты ответов:{data[current_question][2]}\n\nПравильный ответ: {data[current_question][3]}')
+        bot.send_message(message.chat.id, f'Вопрос #{data[current_question][0]}\n\n{data[current_question][1]}'
+                                          f'\nВарианты ответов:\n{string}\n\nПравильный ответ: {data[current_question][3]}')
         bot.register_next_step_handler(message, check_answer, current_question, data, score)
     else:
         bot.send_message(message.chat.id, f'Тестирование окончено!\nВаш результат: {score}', reply_markup=first_level_keyboard())
+
 
 
 def check_answer(message, current_question, data, score):
