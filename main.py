@@ -196,7 +196,9 @@ def create_sert(message, table_name):
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    bot.send_message(message.chat.id, 'Привет', reply_markup=first_level_keyboard(), parse_mode='HTML')
+    bot.send_message(message.chat.id, 'Приветствую тебя', reply_markup=first_level_keyboard(), parse_mode='HTML')
+    bot.send_message(message.chat.id, '👋', reply_markup=first_level_keyboard(), parse_mode='HTML')
+    bot.send_message(message.chat.id, 'Для того чтобы пройти тестирование выбери тест на клавиатуре ⬇️', reply_markup=first_level_keyboard(), parse_mode='HTML')
     create_database(message)
 
 
