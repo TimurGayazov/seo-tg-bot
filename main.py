@@ -30,10 +30,13 @@ def handle_callback(callback_query):
         directory_path = 'users_serts'
         word_to_search = str(callback_query.message.chat.id)
         matching_files = [file for file in os.listdir(directory_path) if word_to_search in file]
-        for file in matching_files:
-            with open(f'users_serts/{file}', 'rb') as photo:
-                bot.send_photo(callback_query.message.chat.id, photo)
-            print(file)
+        if len(matching_files) > 0:
+            for file in matching_files:
+                with open(f'users_serts/{file}', 'rb') as photo:
+                    bot.send_photo(callback_query.message.chat.id, photo)
+                print(file)
+        else:
+            bot.send_message(callback_query.message.chat.id, 'У вас отсутствуют сертификаты.\nДля того чтобы их получить - пройдите один из тестов ниже ⬇️', reply_markup=first_level_keyboard(), parse_mode='HTML')
 
 
 def read_table():
